@@ -321,6 +321,49 @@ Custom configuration in `tailwind.config.js` includes:
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
 
+## 🚀 Deployment
+
+### GitHub Pages Deployment
+
+1. **Build the project:**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy to GitHub Pages:**
+   - Push your code to a GitHub repository
+   - Go to repository Settings → Pages
+   - Select "Deploy from a branch"
+   - Choose "main" branch and "/dist" folder
+   - Your app will be available at `https://yourusername.github.io/repository-name`
+
+### Netlify Deployment
+
+1. **Connect your GitHub repository to Netlify**
+2. **Set build settings:**
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+3. **Deploy automatically on every push to main branch**
+
+### Vercel Deployment
+
+1. **Connect your GitHub repository to Vercel**
+2. **Vercel will automatically detect Vue.js and configure:**
+   - Build command: `npm run build`
+   - Output directory: `dist`
+3. **Deploy with zero configuration**
+
+### Manual Deployment
+
+1. **Build the project:**
+   ```bash
+   npm run build
+   ```
+
+2. **Upload the `dist` folder contents to your web server**
+
+3. **Configure your server to serve the `index.html` for all routes (SPA routing)**
+
 ## 📄 License
 
 This project is created for demonstration purposes. Feel free to use it as a starting point for your own projects.
