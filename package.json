@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "deploy": "npm run build"
   },
   "dependencies": {
     "pinia": "^3.0.3",
