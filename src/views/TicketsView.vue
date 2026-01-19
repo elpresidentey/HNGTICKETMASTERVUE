@@ -141,7 +141,7 @@
             appear
           >
             <TicketCard
-              v-for="(ticket, index) in ticketStore.tickets"
+              v-for="(ticket, index) in sortedTickets"
               :key="ticket.id"
               :ticket="ticket"
               :style="{ '--delay': index * 0.1 + 's' }"
@@ -179,7 +179,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTicketStore } from '@/stores/tickets'
 import { useRouter } from 'vue-router'
@@ -193,6 +193,14 @@ const authStore = useAuthStore()
 const ticketStore = useTicketStore()
 const router = useRouter()
 const toast = useToast()
+
+// Sort tickets by status: open > in_progress > closed
+const sortedTickets = computed(() => {
+  const statusOrder = { 'open': 1, 'in_progress': 2, 'closed': 3 }
+  return [...ticketStore.tickets].sort((a, b) => {
+    return statusOrder[a.status] - statusOrder[b.status] || a.title.localeCompare(b.title)
+  })
+})
 
 // Modal state
 const isCreateModalOpen = ref(false)
@@ -230,9 +238,10 @@ const createNewTicket = () => {
   isCreateModalOpen.value = true
 }
 
-const handleTicketCreated = () => {
+const handleTicketCreated = (newTicket) => {
   isCreateModalOpen.value = false
-  // Tickets will be automatically updated via the store
+  toast.success(`Ticket "${newTicket.title}" created successfully!`)
+  loadTicketsWithErrorHandling()
 }
 
 const handleEditTicket = (ticket) => {
@@ -240,10 +249,11 @@ const handleEditTicket = (ticket) => {
   isEditModalOpen.value = true
 }
 
-const handleTicketUpdated = () => {
+const handleTicketUpdated = (updatedTicket) => {
   isEditModalOpen.value = false
   selectedTicket.value = null
-  // Tickets will be automatically updated via the store
+  toast.success(`Ticket "${updatedTicket.title}" updated successfully!`)
+  loadTicketsWithErrorHandling()
 }
 
 const handleDeleteTicket = (ticket) => {

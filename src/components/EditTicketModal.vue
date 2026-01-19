@@ -221,8 +221,8 @@ const onSubmit = handleSubmit(async (values) => {
 
     const updatedTicket = await ticketStore.updateTicket(props.ticket.id, ticketData)
     
-    toast.success(`Ticket "${updatedTicket.title}" updated successfully!`)
-    emit('updated')
+    // Emit the updated event with the ticket data - parent will handle the success notification
+    emit('updated', updatedTicket)
     closeModal()
   } catch (error) {
     console.error('Update ticket error:', error)

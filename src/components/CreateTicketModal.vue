@@ -1,11 +1,11 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
     style="background-color: rgba(0, 0, 0, 0.5);"
     @click="handleBackdropClick"
   >
-    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-screen overflow-y-auto relative">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-screen overflow-y-auto relative modal-content">
         <!-- Loading overlay -->
         <div v-if="isSubmitting" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
           <div class="flex flex-col items-center">
@@ -239,15 +239,16 @@ const onSubmit = handleSubmit(async (values) => {
       
       emit('ticket-created', demoTicket)
       closeModal()
-    } else {
-      // Real mode - actually create the ticket
-      const newTicket = await ticketStore.createTicket(ticketData)
-      
-      toast.success(`Ticket "${newTicket.title}" created successfully!`)
-      emit('created')
-      emit('ticket-created', newTicket)
-      closeModal()
+      return // Exit early for demo mode
     }
+    
+    // Real mode - actually create the ticket
+    const newTicket = await ticketStore.createTicket(ticketData)
+    
+    // Emit the created event without showing a toast here
+    // The parent component will handle showing the success message
+    emit('created', newTicket)
+    closeModal()
   } catch (error) {
     console.error('Create ticket error:', error)
     const errorMessage = error.message || 'Failed to create ticket. Please try again.'
@@ -311,40 +312,29 @@ onUnmounted(() => {
 
 <style scoped>
 /* Modal Animations */
-.modal-enter-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: all 0.3s ease-out;
 }
 
-.modal-leave-active {
-  transition: all 0.2s ease-in;
-}
-
-.modal-enter-from {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
   transform: scale(0.9) translateY(-20px);
 }
 
-.modal-leave-to {
-  opacity: 0;
-  transform: scale(0.95) translateY(10px);
-}
-
 /* Backdrop animation */
-.fixed.inset-0 {
+.modal-backdrop {
   animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Modal content animation */
-.bg-white.rounded-lg {
+.modal-content {
   animation: slideIn 0.3s ease-out;
 }
 
@@ -359,13 +349,13 @@ onUnmounted(() => {
   }
 }
 
-/* Loading state animations */
+/* Loading state */
 .form-loading {
   pointer-events: none;
   opacity: 0.7;
 }
 
-/* Enhanced button hover animations */
+/* Button styles */
 button {
   transition: all 0.2s ease;
 }
@@ -379,11 +369,13 @@ button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-/* Input focus animations */
+/* Input focus styles */
 input:focus,
 select:focus,
 textarea:focus {
   transition: all 0.2s ease;
   transform: scale(1.01);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 </style>

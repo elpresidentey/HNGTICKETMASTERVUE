@@ -45,37 +45,15 @@ export const storageService = {
   // Ticket Management
   getTickets() {
     try {
-      const ticketsData = localStorage.getItem(TICKETS_KEY)
+      const session = this.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
+      
+      const ticketsData = localStorage.getItem(`${TICKETS_KEY}_${session}`)
       if (!ticketsData) {
-        // Initialize with some sample tickets for demo
-        const sampleTickets = [
-          {
-            id: 'ticket_1',
-            title: 'Login Issue',
-            description: 'Users unable to login with correct credentials',
-            status: 'open',
-            createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            updatedAt: new Date(Date.now() - 86400000).toISOString()
-          },
-          {
-            id: 'ticket_2',
-            title: 'Performance Problem',
-            description: 'Dashboard loading slowly for some users',
-            status: 'in_progress',
-            createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-            updatedAt: new Date(Date.now() - 43200000).toISOString() // 12 hours ago
-          },
-          {
-            id: 'ticket_3',
-            title: 'Feature Request',
-            description: 'Add export functionality for ticket data',
-            status: 'closed',
-            createdAt: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-            updatedAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-          }
-        ]
-        this.saveTickets(sampleTickets)
-        return sampleTickets
+        // Return empty array for new users
+        return []
       }
       
       const parsedTickets = JSON.parse(ticketsData)
@@ -101,20 +79,21 @@ export const storageService = {
 
   saveTickets(tickets) {
     try {
+      const session = this.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
+      
       if (!Array.isArray(tickets)) {
         throw new Error('Tickets must be an array')
       }
       
-      localStorage.setItem(TICKETS_KEY, JSON.stringify(tickets))
+      localStorage.setItem(`${TICKETS_KEY}_${session}`, JSON.stringify(tickets))
       return true
     } catch (error) {
       console.error('Failed to save tickets:', error)
-      // Provide specific error messages for different storage issues
       if (error.name === 'QuotaExceededError') {
         throw new Error('Storage quota exceeded. Please clear some data and try again.')
-      }
-      if (error.name === 'SecurityError') {
-        throw new Error('Storage access denied. Please check your browser settings.')
       }
       throw new Error('Failed to save tickets. Please try again.')
     }
@@ -122,6 +101,11 @@ export const storageService = {
 
   createTicket(ticketData) {
     try {
+      const session = this.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
+      
       // Validate required fields
       if (!ticketData.title || typeof ticketData.title !== 'string' || ticketData.title.trim() === '') {
         throw new Error('Title is required and must be a non-empty string')
@@ -141,21 +125,22 @@ export const storageService = {
       }
       
       const tickets = this.getTickets()
+      
       const newTicket = {
-        id: `ticket_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        title: ticketData.title.trim(),
-        description: description,
-        status: status,
+        id: `ticket_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        ...ticketData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        createdBy: session // Track which user created the ticket
       }
       
       tickets.push(newTicket)
       this.saveTickets(tickets)
+      
       return newTicket
     } catch (error) {
       console.error('Failed to create ticket:', error)
-      throw error
+      throw new Error('Failed to create ticket. Please try again.')
     }
   },
 

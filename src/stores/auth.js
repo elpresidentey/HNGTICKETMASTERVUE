@@ -117,10 +117,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = () => {
-    user.value = null
-    error.value = null
-    storageService.clearSession()
+  const logout = async () => {
+    try {
+      // Clear the session
+      storageService.clearSession()
+      
+      // Reset user data
+      user.value = null
+      
+      return true
+    } catch (error) {
+      console.error('Error during logout:', error)
+      throw new Error('Failed to log out. Please try again.')
+    }
   }
 
   const checkAuth = () => {
